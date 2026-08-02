@@ -806,7 +806,7 @@
      ============================================================ */
 
   const VIDEOS = [
-    { id: "SEU_ID_1", title: "Insert video title" },
+    { id: "SAHaKctmqqA", title: "Gaming Edit" },
     { id: "SEU_ID_2", title: "Insert video title" },
     { id: "SEU_ID_3", title: "Insert video title" },
     { id: "SEU_ID_4", title: "Insert video title" },
@@ -885,7 +885,7 @@
     const isPlaceholder = video.id.startsWith("SEU_ID");
     modalContent.innerHTML = isPlaceholder
       ? `<div class="empty-msg">No video linked yet.<br>Drop your YouTube ID in the VIDEOS list at the bottom of the file.</div>`
-      : `<iframe src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0" title="${video.title}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+      : `<iframe src="https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1" title="${video.title}" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
     overlay.classList.add('open');
   }
 
