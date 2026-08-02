@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRYAN GS — Gaming Video Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ============================================================
+     COMO EDITAR OS VIDEOS DO CARROSSEL
+     Va ate a secao "<script>" no final do arquivo e edite o
+     array VIDEOS. Cada video precisa de um "id" do youtube
+     (aquele codigo que fica depois de "v=" no link do video)
+     e um "title". So isso. O site monta o carrossel sozinho.
+     ============================================================ */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #08080a;
+    --panel: #131316;
+    --panel-2: #1c1c20;
+    --line: #2b2b30;
+    --white: #f3f3f0;
+    --gray: #8d8d93;
+    --gray-dim: #55555c;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.02em; }
+
+  ::selection { background: var(--white); color: var(--black); }
+
+  a { color: inherit; text-decoration: none; }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 5vw;
+    background: linear-gradient(to bottom, rgba(8,8,10,0.9), transparent);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  .nav-links a { position: relative; transition: color 0.25s; }
+  .nav-links a:hover { color: var(--white); }
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0; bottom: -4px;
+    width: 0; height: 1px;
+    background: var(--white);
+    transition: width 0.25s;
+  }
+  .nav-links a:hover::after { width: 100%; }
+
+  @media (max-width: 700px) { .nav-links { display: none; } }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    padding: 0 20px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.06), transparent 60%),
+      var(--black);
+  }
+
+  .hero-photo {
+    width: 116px;
+    height: 116px;
+    border-radius: 50%;
+    border: 1px dashed var(--line);
+    background: var(--panel);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 26px;
+    position: relative;
+  }
+
+  .hero-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hero-photo .hero-photo-placeholder {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gray-dim);
+    text-align: center;
+    padding: 0 14px;
+    line-height: 1.5;
+  }
+
+  .hero-eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 18px;
+  }
+
+  .hero-eyebrow span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--white);
+    margin-right: 10px;
+    animation: pulse 1.6s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.7); }
+  }
+
+  .hero-title {
+    font-size: clamp(64px, 15vw, 190px);
+    line-height: 0.85;
+    position: relative;
+    color: var(--white);
+  }
+
+  .hero-title .glitch {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero-title .glitch::before,
+  .hero-title .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: var(--black);
+    overflow: hidden;
+    clip-path: inset(0 0 0 0);
+  }
+
+  .hero-title .glitch::before {
+    color: var(--white);
+    animation: glitch-1 5s infinite linear;
+  }
+
+  .hero-title .glitch::after {
+    color: var(--white);
+    animation: glitch-2 5s infinite linear;
+  }
+
+  @keyframes glitch-1 {
+    0%, 92%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+    93% { clip-path: inset(10% 0 65% 0); transform: translate(-4px, 2px); }
+    94% { clip-path: inset(70% 0 5% 0); transform: translate(4px, -2px); }
+    95% { clip-path: inset(40% 0 40% 0); transform: translate(-3px, 0); }
+    96% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  }
+
+  @keyframes glitch-2 {
+    0%, 90%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+    91% { clip-path: inset(60% 0 10% 0); transform: translate(4px, 0); }
+    92% { clip-path: inset(20% 0 60% 0); transform: translate(-4px, 2px); }
+    93% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  }
+
+  .hero-sub {
+    margin-top: 26px;
+    font-size: clamp(14px, 2vw, 18px);
+    color: var(--gray);
+    max-width: 560px;
+  }
+
+  .hero-sub strong { color: var(--white); font-weight: 600; }
+
+  .hero-cta {
+    margin-top: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 30px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: transparent;
+  }
+
+  .hero-cta:hover {
+    background: var(--white);
+    color: var(--black);
+    border-color: var(--white);
+    transform: translateY(-2px);
+  }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gray-dim);
+    text-transform: uppercase;
+  }
+
+  .scroll-cue .line {
+    width: 1px; height: 34px;
+    background: linear-gradient(var(--gray-dim), transparent);
+    animation: scrollmove 1.8s infinite;
+  }
+
+  @keyframes scrollmove {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    51% { transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  .strip {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 16px 0;
+    background: var(--panel);
+  }
+
+  .strip-track {
+    display: inline-block;
+    animation: marquee 22s linear infinite;
+  }
+
+  .strip-track span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.05em;
+    color: var(--gray-dim);
+    margin: 0 26px;
+  }
+
+  .strip-track span.on { color: var(--white); }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  section { padding: 110px 5vw; position: relative; }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 50px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .section-tag {
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gray-dim);
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 1;
+  }
+
+  .section-desc {
+    color: var(--gray);
+    max-width: 340px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .reel { padding-left: 0; padding-right: 0; }
+  .reel .section-head { padding: 0 5vw; }
+
+  .carousel-shell {
+    position: relative;
+  }
+
+  .carousel-wrap {
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(to right, transparent 0, black 4%, black 96%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 4%, black 96%, transparent 100%);
+  }
+
+  .carousel-track {
+    display: flex;
+    gap: 22px;
+    width: max-content;
+    padding: 6px 5vw;
+    will-change: transform;
+  }
+
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(19,19,22,0.85);
+    border: 1px solid var(--line);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+    backdrop-filter: blur(6px);
+  }
+
+  .carousel-arrow svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .carousel-arrow:hover {
+    background: var(--white);
+    border-color: var(--white);
+  }
+
+  .carousel-arrow:hover svg { stroke: var(--black); }
+
+  .carousel-arrow.left { left: 14px; }
+  .carousel-arrow.right { right: 14px; }
+
+  @media (max-width: 700px) {
+    .carousel-arrow { width: 40px; height: 40px; }
+  }
+
+  .vcard {
+    position: relative;
+    width: 300px;
+    aspect-ratio: 9 / 13;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1), border-color 0.4s;
+  }
+
+  .vcard:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: #4a4a52;
+  }
+
+  .vcard img, .vcard .placeholder-thumb {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.55) contrast(1.05) brightness(0.85);
+    transition: filter 0.4s, transform 0.6s;
+  }
+
+  .vcard:hover img, .vcard:hover .placeholder-thumb {
+    filter: grayscale(0) contrast(1.05) brightness(0.9);
+    transform: scale(1.06);
+  }
+
+  .placeholder-thumb {
+    background: repeating-linear-gradient(135deg, #1f1f24 0 2px, #17171a 2px 26px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-thumb .ph-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    color: var(--gray-dim);
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .vcard::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 45%, transparent 65%);
+  }
+
+  .vcard-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 18px;
+    z-index: 2;
+  }
+
+  .vcard-info .idx {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--gray);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .vcard-info .name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    line-height: 1.05;
+  }
+
+  .play-btn {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%) scale(0.85);
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .vcard:hover .play-btn { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  .play-btn svg { width: 18px; height: 18px; margin-left: 3px; }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 800px) { .services-grid { grid-template-columns: 1fr; } }
+
+  .service {
+    background: var(--panel);
+    padding: 44px 32px;
+    transition: background 0.3s;
+  }
+
+  .service:hover { background: var(--panel-2); }
+
+  .service .icon { width: 42px; height: 42px; margin-bottom: 26px; }
+
+  .service h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+  }
+
+  .service p { color: var(--gray); font-size: 14px; line-height: 1.65; }
+
+  .about {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  @media (max-width: 800px) { .about { grid-template-columns: 1fr; } }
+
+  .about-visual {
+    aspect-ratio: 4 / 3;
+    max-width: 360px;
+    margin: 0 auto;
+    border-radius: 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .about-visual .tag-cloud {
+    font-family: 'Bebas Neue', sans-serif;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .about-visual .tag-cloud span {
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--gray);
+  }
+
+  .about p { color: var(--gray); font-size: 15px; line-height: 1.8; margin-bottom: 18px; }
+  .about p strong { color: var(--white); }
+
+  .contact { text-align: center; border-top: 1px solid var(--line); }
+
+  .contact .section-title { font-size: clamp(40px, 8vw, 100px); margin: 0 auto 30px; }
+
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+  }
+
+  .contact-links a {
+    padding: 14px 28px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+
+  .contact-links a:hover {
+    background: var(--white);
+    color: var(--black);
+    border-color: var(--white);
+  }
+
+  footer {
+    padding: 30px 5vw;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--gray-dim);
+    border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    width: min(880px, 100%);
+    aspect-ratio: 16/9;
+    background: var(--panel);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--line);
+  }
+
+  .modal-box iframe { width: 100%; height: 100%; border: 0; }
+
+  .modal-box .empty-msg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--gray);
+    font-size: 13px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: -46px; right: 0;
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 30px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">BRYAN GS</div>
+  <div class="nav-links">
+    <a href="#reel">Work</a>
+    <a href="#services">Services</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <!-- Para colocar sua foto: troque a div "hero-photo-placeholder" abaixo
+       por uma tag <img src="sua-foto.jpg" alt="Bryan GS"> -->
+  <div class="hero-photo">
+    <img src="PERFIL_3.png" alt="Bryan GS">
+  </div>
+  <div class="hero-eyebrow"><span></span>Gaming video editor</div>
+  <h1 class="hero-title">
+    <span class="glitch" data-text="BRYAN">BRYAN</span><br>
+    <span class="glitch" data-text="GS">GS</span>
+  </h1>
+  <p class="hero-sub">I cut gaming montages, highlight reels and shorts that make people <strong>stop scrolling.</strong> Fast pacing, clean sync, zero filler.</p>
+  <a href="#reel" class="hero-cta">Watch the reel ↓</a>
+  <div class="scroll-cue"><span>Scroll</span><div class="line"></div></div>
+</section>
+
+<div class="strip">
+  <div class="strip-track">
+    <span class="on">MONTAGES</span><span>•</span>
+    <span>HIGHLIGHTS</span><span>•</span>
+    <span class="on">SHORTS</span><span>•</span>
+    <span>GAMEPLAY EDITS</span><span>•</span>
+    <span class="on">CLIP COMPILATIONS</span><span>•</span>
+    <span>FAST PACING</span><span>•</span>
+    <span class="on">MONTAGES</span><span>•</span>
+    <span>HIGHLIGHTS</span><span>•</span>
+    <span class="on">SHORTS</span><span>•</span>
+    <span>GAMEPLAY EDITS</span><span>•</span>
+    <span class="on">CLIP COMPILATIONS</span><span>•</span>
+    <span>FAST PACING</span><span>•</span>
+  </div>
+</div>
+
+<section class="reel" id="reel">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">Portfolio</div>
+      <div class="section-title">The Reel</div>
+    </div>
+    <p class="section-desc">A running loop of my latest edits. Hover to pause, click to watch.</p>
+  </div>
+  <div class="carousel-shell">
+    <div class="carousel-wrap">
+      <div class="carousel-track" id="carouselTrack"></div>
+    </div>
+    <button class="carousel-arrow left" id="prevBtn" aria-label="Previous videos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f3f3f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="carousel-arrow right" id="nextBtn" aria-label="Next videos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f3f3f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+</section>
+
+<section id="services">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">What I do</div>
+      <div class="section-title">Built for gamers,<br>by a gamer</div>
+    </div>
+  </div>
+  <div class="services-grid">
+    <div class="service">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#f3f3f0" stroke-width="1.4"><path d="M15 10l4.55-2.28a1 1 0 011.45.9v6.76a1 1 0 01-1.45.9L15 14M5 8h8a2 2 0 012 2v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4a2 2 0 012-2z"/></svg>
+      <h3>Montage editing</h3>
+      <p>High-energy clip compilations synced to the beat. The kind that keep viewers watching till the last second.</p>
+    </div>
+    <div class="service">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#f3f3f0" stroke-width="1.4"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <h3>Highlight reels</h3>
+      <p>Turn hours of raw gameplay into a tight, insane 60-90 second highlight reel. Only the best moments survive.</p>
+    </div>
+    <div class="service">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#f3f3f0" stroke-width="1.4"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-4v12l-6-4"/></svg>
+      <h3>Shorts and reels</h3>
+      <p>Vertical, punchy, algorithm-friendly cuts made for YouTube Shorts, TikTok and Reels.</p>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="about">
+    <div class="about-visual">
+      <div class="tag-cloud">
+        <span>Adobe</span>
+        <span>Premiere</span>
+        <span>After Effects</span>
+        <span>Gaming Videos</span>
+        <span>Editor</span>
+      </div>
+    </div>
+    <div>
+      <div class="section-tag">About</div>
+      <div class="section-title" style="margin-bottom: 22px;">Your gameplay, cut for impact</div>
+      <p>I'm <strong>Bryan</strong>, a video editor focused entirely on the gaming niche. I know the difference between a clip that hits and a clip that flops, because I've been on both sides of the screen.</p>
+      <p>Every edit is built to keep the viewer hooked: sharp cuts, punchy sound design, and pacing that respects your attention span.</p>
+      <p>Got a channel, a clip dump or a highlight reel that needs work? <strong>Let's make it hit different.</strong></p>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="section-tag">Get in touch</div>
+  <div class="section-title">Let's cook<br>something insane</div>
+  <div class="contact-links">
+    <a href="mailto:your@email.com">Email</a>
+    <a href="https://youtube.com" target="_blank" rel="noopener">YouTube</a>
+    <a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://twitter.com" target="_blank" rel="noopener">Twitter / X</a>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Bryan GS. All edits reserved.</span>
+  <span>Gaming video editor</span>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+
+  /* ============================================================
+     EDITE SEUS VIDEOS AQUI
+     ------------------------------------------------------------
+     id: o codigo do video do youtube. Exemplo: no link
+         https://www.youtube.com/watch?v=ABC123XYZ
+         o id e "ABC123XYZ"
+     title: o nome que aparece no card do carrossel
+
+     Se voce ainda nao tem o id, so deixar como esta
+     (ex: "SEU_ID_1") que o card aparece como placeholder
+     esperando o video, sem quebrar o site.
+     ============================================================ */
+
+  const VIDEOS = [
+    { id: "SEU_ID_1", title: "Insert video title" },
+    { id: "SEU_ID_2", title: "Insert video title" },
+    { id: "SEU_ID_3", title: "Insert video title" },
+    { id: "SEU_ID_4", title: "Insert video title" },
+    { id: "SEU_ID_5", title: "Insert video title" },
+    { id: "SEU_ID_6", title: "Insert video title" },
+  ];
+
+  const track = document.getElementById('carouselTrack');
+
+  function buildCard(video, index) {
+    const isPlaceholder = video.id.startsWith("SEU_ID");
+    const card = document.createElement('div');
+    card.className = 'vcard';
+    card.dataset.id = video.id;
+    card.dataset.title = video.title;
+
+    const thumbHTML = isPlaceholder
+      ? `<div class="placeholder-thumb"><div class="ph-label">Add your YouTube video ID<br>to fill this card</div></div>`
+      : `<img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}">`;
+
+    card.innerHTML = `
+      ${thumbHTML}
+      <div class="play-btn">
+        <svg viewBox="0 0 24 24" fill="#08080a"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+      <div class="vcard-info">
+        <div class="idx">Edit ${String(index + 1).padStart(2,'0')}</div>
+        <div class="name">${video.title}</div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => openModal(video));
+    return card;
+  }
+
+  const allVideos = [...VIDEOS, ...VIDEOS];
+  allVideos.forEach((v, i) => track.appendChild(buildCard(v, i % VIDEOS.length)));
+
+  /* ---------- movimento do carrossel (auto + manual) ---------- */
+  const carouselWrap = document.querySelector('.carousel-wrap');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  let posX = 0;
+  let paused = false;
+  const SPEED = 0.5; // px por frame do loop automatico
+
+  function stepSize() {
+    const card = track.querySelector('.vcard');
+    const gap = 22;
+    return card ? card.getBoundingClientRect().width + gap : 322;
+  }
+
+  function tick() {
+    const half = track.scrollWidth / 2;
+    if (!paused) posX -= SPEED;
+    if (half > 0) {
+      if (posX <= -half) posX += half;
+      if (posX > 0) posX -= half;
+    }
+    track.style.transform = `translateX(${posX}px)`;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  carouselWrap.addEventListener('mouseenter', () => paused = true);
+  carouselWrap.addEventListener('mouseleave', () => paused = false);
+
+  prevBtn.addEventListener('click', () => { posX += stepSize(); });
+  nextBtn.addEventListener('click', () => { posX -= stepSize(); });
+
+  const overlay = document.getElementById('modalOverlay');
+  const modalContent = document.getElementById('modalContent');
+
+  function openModal(video) {
+    const isPlaceholder = video.id.startsWith("SEU_ID");
+    modalContent.innerHTML = isPlaceholder
+      ? `<div class="empty-msg">No video linked yet.<br>Drop your YouTube ID in the VIDEOS list at the bottom of the file.</div>`
+      : `<iframe src="https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0" title="${video.title}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    overlay.classList.add('open');
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    modalContent.innerHTML = '';
+  }
+
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+</script>
+
+</body>
+</html>
