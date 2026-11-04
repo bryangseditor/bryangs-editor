@@ -738,7 +738,7 @@
   .modal-overlay.open { display: flex; }
 
   .modal-box {
-    width: min(880px, 100%);
+    width: min(1280px, 100%, calc((100vh - 80px) * 16 / 9));
     aspect-ratio: 16/9;
     background: var(--panel);
     border-radius: 10px;
