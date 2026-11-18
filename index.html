@@ -610,6 +610,64 @@
     100% { transform: scale(2); opacity: 0; }
   }
 
+  /* ---------- INTRODUCTION (visual proprio, centralizado) ---------- */
+  #intro .section-head {
+    justify-content: center;
+    text-align: center;
+  }
+
+  #intro .section-title { font-size: clamp(44px, 8vw, 96px); }
+
+  .intro-frame {
+    position: relative;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .intro-frame .highlight-card {
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+  }
+
+  .intro-frame .corner {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--accent);
+    transition: width 0.35s, height 0.35s;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .intro-frame .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+  .intro-frame .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+  .intro-frame .bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+  .intro-frame .br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+  .intro-frame:hover .corner { width: 42px; height: 42px; }
+
+  .intro-card .highlight-info {
+    text-align: center;
+    padding-bottom: clamp(18px, 3vw, 32px);
+  }
+
+  .intro-card .highlight-play {
+    background: rgba(24,21,27,0.55);
+    border: 2px solid var(--white);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .intro-card .highlight-play svg { fill: var(--white); }
+
+  .intro-card:hover .highlight-play {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .intro-card:hover .highlight-play svg { fill: var(--black); }
+
   .services-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -858,10 +916,30 @@
   </div>
 </div>
 
+<section class="highlights" id="intro">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">Start here</div>
+      <div class="section-title">Introduction</div>
+    </div>
+  </div>
+  <div class="intro-frame">
+    <span class="corner tl"></span>
+    <span class="corner tr"></span>
+    <span class="corner bl"></span>
+    <span class="corner br"></span>
+    <div class="highlight-card intro-card" id="introCard"></div>
+  </div>
+  <a href="#highlights" class="section-next">
+    Highlights reel
+    <svg viewBox="0 0 24 24" fill="none" stroke="#55555c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+  </a>
+</section>
+
 <section class="highlights" id="highlights">
   <div class="section-head">
     <div>
-      <div class="section-tag">Watch first</div>
+      <div class="section-tag">Highlights</div>
       <div class="section-title">Highlights Reel</div>
     </div>
   </div>
@@ -998,6 +1076,10 @@
      Mesma logica: troque o id pelo do seu video de highlights. */
   const HIGHLIGHT_VIDEO = { id: "oEjAmmKSLRY", title: "Highlights Reel" };
 
+  /* Video de INTRODUCAO (o melhor video), acima do highlights reel.
+     Troque "SEU_ID_INTRO" pelo id do video no YouTube. */
+  const INTRO_VIDEO = { id: "5qa4mWCmDD8", title: "Introduction" };
+
   const grid = document.getElementById('latestGrid');
 
   function buildCard(video, index) {
@@ -1028,29 +1110,28 @@
 
   VIDEOS.forEach((v, i) => grid.appendChild(buildCard(v, i)));
 
-  /* ---------- card grande de destaque ---------- */
-  const highlightCard = document.getElementById('highlightCard');
-
-  function buildHighlight(video) {
+  /* ---------- cards grandes de destaque (intro + highlights) ---------- */
+  function buildBigCard(card, video, tagText, placeholderText) {
     const isPlaceholder = video.id.startsWith("SEU_ID");
     const thumbHTML = isPlaceholder
-      ? `<div class="placeholder-thumb"><div class="ph-label">Add your highlights video ID<br>to fill this card</div></div>`
+      ? `<div class="placeholder-thumb"><div class="ph-label">${placeholderText}<br>to fill this card</div></div>`
       : `<img src="https://img.youtube.com/vi/${video.id}/maxresdefault.jpg" alt="${video.title}" onerror="this.onerror=null;this.src='https://img.youtube.com/vi/${video.id}/hqdefault.jpg';">`;
 
-    highlightCard.innerHTML = `
+    card.innerHTML = `
       ${thumbHTML}
       <div class="highlight-play">
         <svg viewBox="0 0 24 24" fill="#08080a"><path d="M8 5v14l11-7z"/></svg>
       </div>
       <div class="highlight-info">
-        <div class="tag">Full highlights reel</div>
+        <div class="tag">${tagText}</div>
         <div class="name">${video.title}</div>
       </div>
     `;
-    highlightCard.addEventListener('click', () => openModal(video));
+    card.addEventListener('click', () => openModal(video));
   }
 
-  buildHighlight(HIGHLIGHT_VIDEO);
+  buildBigCard(document.getElementById('introCard'), INTRO_VIDEO, 'Best video', 'Add your intro video ID');
+  buildBigCard(document.getElementById('highlightCard'), HIGHLIGHT_VIDEO, 'Full highlights reel', 'Add your highlights video ID');
 
 
   /* ---------- botao do Discord: copia o username ---------- */
